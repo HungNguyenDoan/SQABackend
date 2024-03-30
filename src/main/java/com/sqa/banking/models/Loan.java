@@ -1,12 +1,11 @@
 package com.sqa.banking.models;
 
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
-import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,6 +20,7 @@ import lombok.Data;
 
 public class Loan {
     @Id
+    @GeneratedValue(generator = "timestampGenerator")
     private String id;
 
     @Column(name = "start_date")
@@ -52,12 +52,4 @@ public class Loan {
 
     @Column(name = "has_collateral")
     private Integer hasCollateral;
-
-    @PrePersist
-    private void generateLoanId() {
-        if (this.id == null) {
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmssSSS");
-            this.id = dateFormat.format(new Date());
-        }
-    }
 }
