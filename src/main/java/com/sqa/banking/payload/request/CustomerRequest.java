@@ -28,8 +28,8 @@ public class CustomerRequest {
     Date dob;
     @NotNull(message = "Định danh không được để trống")
     @Unique(table = "Customer", fieldName = "identify", message = "Đã có số định danh này trong hệ thống")
-    @Max(value = 12, message = "Số định danh phải có 12 chữ số")
-    @Min(value = 12, message = "Số định danh phải có 12 chữ số")
+    // @Max(value = 12, message = "Số định danh phải có 12 chữ số")
+    // @Min(value = 12, message = "Số định danh phải có 12 chữ số")
     String identify;
     @Pattern(message = "Email sai định dạng", regexp = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$")
     String email;

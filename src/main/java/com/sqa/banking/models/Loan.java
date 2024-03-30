@@ -2,6 +2,8 @@ package com.sqa.banking.models;
 
 import java.util.Date;
 
+import org.hibernate.annotations.GenericGenerator;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -10,6 +12,7 @@ import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "loans")
@@ -17,10 +20,11 @@ import lombok.Data;
 @Data
 @Builder
 @AllArgsConstructor
-
+@NoArgsConstructor
 public class Loan {
     @Id
-    @GeneratedValue(generator = "timestampGenerator")
+    @GenericGenerator(name = "time_id", strategy = "com.sqa.banking.generators.TimestampGenerator")
+    @GeneratedValue(generator = "time_id")
     private String id;
 
     @Column(name = "start_date")
@@ -36,7 +40,10 @@ public class Loan {
     private Integer loanTerm;
 
     @Column(name = "amount")
-    Integer amount;
+    private Integer amount;
+
+    @Column(name = "remaining")
+    private Integer remaining;
 
     @Column(name = "customer_id")
     private Long customerId;

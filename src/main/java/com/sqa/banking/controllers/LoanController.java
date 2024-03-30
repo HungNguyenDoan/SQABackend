@@ -38,17 +38,18 @@ public class LoanController {
         Loan newLoan = Loan.builder()
                 .customerId(request.getCustomer_id())
                 .amount(request.getAmount())
-                .interestRate(request.getInterest_rate())
+                .remaining(request.getAmount())
+                .interestRate(0.03)
                 .loanTerm(request.getLoan_term())
-                .startDate(request.getStart_date())
                 .hasCollateral(request.getHas_collateral())
                 .hasSalaryStatement(request.getHas_salary_statement())
                 .hasSalaryTable(request.getHas_salary_table())
+                .status(0)
                 .build();
         SuccessResponse response = SuccessResponse.builder()
                 .status(HttpStatus.OK.value())
                 .message("")
-                .data(newLoan)
+                .data(loanService.create(newLoan))
                 .build();
         return new ResponseEntity<>(response, HttpStatus.OK);
     }

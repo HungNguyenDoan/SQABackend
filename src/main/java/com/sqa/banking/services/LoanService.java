@@ -21,15 +21,9 @@ public class LoanService {
         return repository.findById(id).get();
     }
 
-    @Transactional(rollbackFor = {Exception.class})
+    @Transactional(rollbackFor = { Exception.class })
     public Loan create(Loan request) {
-        Date startDate = request.getStartDate();
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(startDate);
-        calendar.add(Calendar.MONTH, request.getLoanTerm());
-        Date endDate = calendar.getTime();
-        request.setEndDate(endDate);
-        return repository.save(request);
+        return repository.saveAndFlush(request);
     }
 
     public List<Loan> getAllActiveLoan(Long customerId) {
@@ -39,6 +33,13 @@ public class LoanService {
     @Transactional(rollbackFor = { Exception.class })
     public Loan disbursalLoan(String id) {
         Loan loan = repository.getReferenceById(id);
+        Date startDate = new Date();
+        loan.setStartDate(startDate);
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(startDate);
+        calendar.add(Calendar.MONTH, loan.getLoanTerm());
+        Date endDate = calendar.getTime();
+        loan.setEndDate(endDate);
         loan.setStatus(2);
         return repository.saveAndFlush(loan);
     }
@@ -51,9 +52,33 @@ public class LoanService {
     }
 
     @Transactional(rollbackFor = { Exception.class })
-    public boolean payLoan(Loan loan, Integer money) {
-        loan.setAmount(loan.getAmount() - money);
-        repository.saveAndFlush(loan);
+    public boolean payLoan(String loanId, Integer money) {
+        Loan currentLoan = repository.getReferenceById(loanId);
+        Integer interestMoney = roundMoney(
+                currentLoan.getInterestRate() * currentLoan.getAmount() / currentLoan.getLoanTerm());
+        Integer baseMoneyPerMonth = roundMoney((double) (currentLoan.getAmount() / currentLoan.getLoanTerm()));
+        Integer returnMoneyThisMonth = interestMoney + baseMoneyPerMonth;
+        if (returnMoneyThisMonth == money) {
+            currentLoan.setRemaining(currentLoan.getRemaining() - baseMoneyPerMonth);
+            repository.saveAndFlush(currentLoan);
+            return true;
+        }
+        if (returnMoneyThisMonth < money) {
+            Integer baseReturnMoney = money - interestMoney;
+            currentLoan.setRemaining(currentLoan.getRemaining() - baseReturnMoney);
+            repository.saveAndFlush(currentLoan);
+            return true;
+        }
+        if (returnMoneyThisMonth > money) {
+            Integer excessMoney = money - returnMoneyThisMonth;
+            Integer baseMoneyRemaining = currentLoan.getRemaining() - roundMoney(excessMoney / 1.09);
+            currentLoan.setRemaining(baseMoneyRemaining);
+            repository.saveAndFlush(currentLoan);
+        }
         return true;
+    }
+
+    public static Integer roundMoney(Double money) {
+        return (int) (Math.round(money / 1000.0) * 1000.0);
     }
 }
