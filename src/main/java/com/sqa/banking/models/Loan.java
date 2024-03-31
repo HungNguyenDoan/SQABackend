@@ -30,6 +30,9 @@ public class Loan {
     @Column(name = "start_date")
     private Date startDate;
 
+    @Column(name = "update_date")
+    private Date updateDate;
+
     @Column(name = "interest_rate")
     private Double interestRate;
 

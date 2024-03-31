@@ -26,7 +26,7 @@ public class Payment {
     private Long id;
 
     @Column(name = "amount")
-    private Long amount;
+    private Integer amount;
 
     @Column(name = "loan_id")
     private String loanId;

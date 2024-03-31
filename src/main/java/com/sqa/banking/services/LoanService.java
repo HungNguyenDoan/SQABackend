@@ -54,20 +54,29 @@ public class LoanService {
     @Transactional(rollbackFor = { Exception.class })
     public boolean payLoan(String loanId, Integer money) {
         Loan currentLoan = repository.getReferenceById(loanId);
+        Date currentDate = new Date();
+        if (checkTimeReturnMoney(currentDate, currentLoan.getUpdateDate())) {
+            this.payLoanEarly(currentLoan, money);
+        } else {
+            this.payLoanLate(currentLoan, money);
+        }
+        return true;
+    }
+
+    private void payLoanEarly(Loan currentLoan, Integer money) {
         Integer interestMoney = roundMoney(
                 currentLoan.getInterestRate() * currentLoan.getAmount() / currentLoan.getLoanTerm());
         Integer baseMoneyPerMonth = roundMoney((double) (currentLoan.getAmount() / currentLoan.getLoanTerm()));
         Integer returnMoneyThisMonth = interestMoney + baseMoneyPerMonth;
+        currentLoan.setUpdateDate(addOneMonth(currentLoan.getUpdateDate()));
         if (returnMoneyThisMonth == money) {
             currentLoan.setRemaining(currentLoan.getRemaining() - baseMoneyPerMonth);
             repository.saveAndFlush(currentLoan);
-            return true;
         }
         if (returnMoneyThisMonth < money) {
             Integer baseReturnMoney = money - interestMoney;
             currentLoan.setRemaining(currentLoan.getRemaining() - baseReturnMoney);
             repository.saveAndFlush(currentLoan);
-            return true;
         }
         if (returnMoneyThisMonth > money) {
             Integer excessMoney = money - returnMoneyThisMonth;
@@ -75,10 +84,31 @@ public class LoanService {
             currentLoan.setRemaining(baseMoneyRemaining);
             repository.saveAndFlush(currentLoan);
         }
-        return true;
     }
 
-    public static Integer roundMoney(Double money) {
+    private void payLoanLate(Loan loan, Integer money) {
+
+    }
+
+    private static Integer roundMoney(Double money) {
         return (int) (Math.round(money / 1000.0) * 1000.0);
+    }
+
+    private static Boolean checkTimeReturnMoney(Date date1, Date date2) {
+        Calendar cal1 = Calendar.getInstance();
+        cal1.setTime(date1);
+        Calendar cal2 = Calendar.getInstance();
+        cal2.setTime(date2);
+        int monthsDifference = 0;
+        monthsDifference = (cal2.get(Calendar.YEAR) - cal1.get(Calendar.YEAR)) * 12;
+        monthsDifference += cal2.get(Calendar.MONTH) - cal1.get(Calendar.MONTH);
+        return monthsDifference < 1;
+    }
+
+    private static Date addOneMonth(Date date) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        calendar.add(Calendar.MONTH, 1);
+        return calendar.getTime();
     }
 }
