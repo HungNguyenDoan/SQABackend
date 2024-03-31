@@ -49,7 +49,6 @@ public class CustomerController {
                 .identify(request.getIdentify())
                 .phoneNumber(request.getPhone_number())
                 .province(request.getProvince())
-                .nationality(request.getNationality())
                 .build();
         SuccessResponse response = SuccessResponse.builder()
                 .status(HttpStatus.OK.value())

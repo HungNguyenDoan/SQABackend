@@ -39,5 +39,4 @@ public class CustomerRequest {
     String address;
     String currentAddress;
     String job;
-    String nationality;
 }

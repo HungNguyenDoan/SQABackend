@@ -61,7 +61,4 @@ public class Customer {
 
     @Column(name = "job")
     private String job;
-
-    @Column(name = "nationality")
-    private String nationality;
 }
