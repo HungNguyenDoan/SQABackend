@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.sqa.banking.models.Customer;
@@ -54,6 +55,16 @@ public class CustomerController {
                 .status(HttpStatus.OK.value())
                 .message("Tạo mới khách hàng thành công")
                 .data(customerService.createCustomer(newCustomer))
+                .build();
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<Object> searchCustomer(@RequestParam String key) {
+        SuccessResponse response = SuccessResponse.builder()
+                .status(HttpStatus.OK.value())
+                .message("searched successfully")
+                .data(customerService.searchCustomer(key))
                 .build();
         return new ResponseEntity<>(response, HttpStatus.OK);
     }

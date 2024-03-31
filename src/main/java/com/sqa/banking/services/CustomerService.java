@@ -1,5 +1,7 @@
 package com.sqa.banking.services;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,8 +19,20 @@ public class CustomerService {
         return customerRepository.findById(id).get();
     }
 
-    @Transactional(rollbackFor = {Exception.class})
+    @Transactional(rollbackFor = { Exception.class })
     public Customer createCustomer(Customer request) {
         return customerRepository.save(request);
+    }
+
+    public List<Customer> findAll() {
+        return customerRepository.findAll();
+    }
+
+    public List<Customer> searchCustomer(String name) {
+        return customerRepository.findByName(name);
+    }
+
+    public Customer getCustomer(Long id) {
+        return customerRepository.findById(id).get();
     }
 }
