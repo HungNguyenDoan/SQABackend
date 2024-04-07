@@ -1,18 +1,22 @@
 package com.sqa.banking.models;
 
+import java.util.ArrayList;
 import java.util.Date;
 
 import org.hibernate.annotations.GenericGenerator;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import java.util.List;
 
 @Entity
 @Table(name = "loans")
@@ -41,7 +45,7 @@ public class Loan {
 
     @Column(name = "loan_term")
     private Integer loanTerm;
-
+   
     @Column(name = "amount")
     private Integer amount;
 
@@ -62,4 +66,6 @@ public class Loan {
 
     @Column(name = "has_collateral")
     private Integer hasCollateral;
+
+    
 }
