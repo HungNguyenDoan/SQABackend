@@ -67,5 +67,7 @@ public class Loan {
     @Column(name = "has_collateral")
     private Integer hasCollateral;
 
+    @Column(name = "owed")
+    private Integer owed;
     
 }

@@ -12,8 +12,6 @@ public class LoanRequest {
     @NotNull(message = "")
     Long customer_id;
     @NotNull(message = "")
-    Date start_date;
-    @NotNull(message = "")
     Integer loan_term;
     @NotNull(message = "")
     Integer amount;

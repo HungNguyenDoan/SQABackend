@@ -44,10 +44,13 @@ public class Payment {
 
     @Column(name = "monthlyPayment")
     private long monthlyPayment; 
+    
     @Column(name = "pay_date")
     private Date pay_date; //hạn thanh toán
 
     @Column(name = "status")
     private int status;
+
+    
 
 }

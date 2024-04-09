@@ -1,5 +1,9 @@
 package com.sqa.banking.controllers;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.Date;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,6 +16,7 @@ import com.sqa.banking.models.Loan;
 import com.sqa.banking.payload.request.LoanRequest;
 import com.sqa.banking.payload.response.SuccessResponse;
 import com.sqa.banking.services.LoanService;
+import com.sqa.banking.services.PaymentService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +27,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 @RequiredArgsConstructor
 public class LoanController {
     private final LoanService loanService;
-
+    private final PaymentService paymentService;
     @GetMapping("/all/{id}")
     public ResponseEntity<Object> getAllUserLoan(@PathVariable Long id) {
         SuccessResponse response = SuccessResponse.builder()
@@ -35,11 +40,15 @@ public class LoanController {
 
     @PostMapping("/create")
     public ResponseEntity<Object> createLoan(@RequestBody @Valid LoanRequest request) {
+        Date currentDate = new Date();
+        LocalDate testDate = LocalDate.of(2023, 12, 1);
+        Date date = Date.from(testDate.atStartOfDay(ZoneId.systemDefault()).toInstant()); //fake database, bao giờ test thì thay vào
         Loan newLoan = Loan.builder()
                 .customerId(request.getCustomer_id())
                 .amount(request.getAmount())
                 .remaining(request.getAmount())
-                .interestRate(0.03)
+                .interestRate(request.getInterest_rate())
+                .startDate(currentDate)
                 .loanTerm(request.getLoan_term())
                 .hasCollateral(request.getHas_collateral())
                 .hasSalaryStatement(request.getHas_salary_statement())
@@ -51,7 +60,9 @@ public class LoanController {
                 .message("")
                 .data(loanService.create(newLoan))
                 .build();
+        paymentService.create(newLoan);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+
 
 }
