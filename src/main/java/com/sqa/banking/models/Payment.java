@@ -37,7 +37,7 @@ public class Payment {
     private String loanId;
 
     @Column(name = "monthly_interest")
-    private long monthlyInterest; //lãi suất tháng
+    private long monthlyInterest; //tiền lãi tháng
 
     @Column(name = "monthly_root")
     private long monthlyRoot; // gốc hàng tháng
@@ -51,6 +51,9 @@ public class Payment {
     @Column(name = "status")
     private int status;
 
-    
+    @Column(name = "monthly_late_interest")
+    private long monthlyLateInterest;
 
+    @Column(name = "monthly_on_time_interest")
+    private long monthlyOnTimeInterest;
 }

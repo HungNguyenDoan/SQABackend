@@ -52,6 +52,8 @@ public class PaymentController {
     @GetMapping("/history/{loanId}")
     public ResponseEntity<Object> getPaymentHistory(@PathVariable String loanId) {
         paymentService.configStatus(paymentService.getAllLoanPayment(loanId));
+        paymentService.configInterest(paymentService.getAllLoanPayment(loanId));
+
         SuccessResponse response = SuccessResponse.builder()
                 .status(HttpStatus.OK.value())
                 .message("Lấy lịch sử thanh toán thành công")

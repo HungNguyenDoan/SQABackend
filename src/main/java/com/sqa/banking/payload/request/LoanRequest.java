@@ -1,6 +1,6 @@
 package com.sqa.banking.payload.request;
 
-import java.util.Date;
+
 
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
@@ -15,8 +15,8 @@ public class LoanRequest {
     Integer loan_term;
     @NotNull(message = "")
     Integer amount;
-    @NotNull(message = "")
-    Double interest_rate;
+    // @NotNull(message = "")
+    // Double interest_rate;
     Integer has_salary_table;
     Integer has_salary_statement;
     Integer has_collateral; 

@@ -33,17 +33,20 @@ public class PaymentService {
         Date startDate = loan.getStartDate();
         for(int i = 1; i <= loan.getLoanTerm(); i++){
             Payment payment = new Payment();
-            long monthlyInterset = Math.round(remainRoot * loan.getInterestRate()/12);
+            long monthlyInterest = Math.round(remainRoot * loan.getInterestRate()/12);
             remainRoot = remainRoot - monthlyRoot;
             payment.setTenor(i);
             payment.setRemainRoot(Math.round(remainRoot));
             payment.setMonthlyRoot(Math.round(monthlyRoot));
-            payment.setMonthlyInterest(monthlyInterset);
+            payment.setMonthlyInterest(monthlyInterest);
             payment.setMonthlyPayment(payment.getMonthlyInterest() + payment.getMonthlyRoot());
             payment.setStatus(0);
             payment.setLoanId(loan.getId());
             payment.setPay_date(createPayDate(startDate));
+            payment.setMonthlyLateInterest(monthlyInterest * 150 /100);
+            payment.setMonthlyOnTimeInterest(monthlyInterest);
             startDate = createPayDate(startDate);
+
             repository.save(payment);
         }
     }
@@ -58,6 +61,31 @@ public class PaymentService {
         
     }
 
+    private int configOwed(List<Payment> payments){
+        for(int i = 0; i < payments.size(); i++){
+            if(payments.get(i).getStatus() == 1){
+                return 1;
+            }
+        }
+        return 0;
+    }
+
+    public void configInterest(List<Payment> payments){
+        if(configOwed(payments) == 1){
+            for(int i = 0; i < payments.size(); i++){
+                payments.get(i).setMonthlyInterest(payments.get(i).getMonthlyLateInterest());
+                payments.get(i).setMonthlyPayment(payments.get(i).getMonthlyInterest() + payments.get(i).getMonthlyRoot());
+                repository.saveAllAndFlush(payments);
+            }
+        }
+        else{
+            for(int i = 0; i < payments.size(); i++){
+                payments.get(i).setMonthlyInterest(payments.get(i).getMonthlyOnTimeInterest());
+                payments.get(i).setMonthlyPayment(payments.get(i).getMonthlyInterest() + payments.get(i).getMonthlyRoot());
+                repository.saveAllAndFlush(payments);
+            }
+        }
+    }
 
     private Date createPayDate(Date startDate) {
         // Khởi tạo lớp Calendar và đặt startDate
@@ -72,6 +100,8 @@ public class PaymentService {
 
         return payDate;
     }
+
+
 
 
 
