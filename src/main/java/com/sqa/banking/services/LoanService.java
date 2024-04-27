@@ -20,7 +20,7 @@ public class LoanService {
     public Loan getDetail(String id) {
         return repository.findById(id).get();
     }
-
+    
     @Transactional(rollbackFor = { Exception.class })
     public Loan create(Loan request) {
         return repository.saveAndFlush(request);

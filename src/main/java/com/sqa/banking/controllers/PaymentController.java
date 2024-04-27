@@ -4,6 +4,7 @@ import java.util.Date;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -60,5 +61,13 @@ public class PaymentController {
                 .data(paymentService.getAllLoanPayment(loanId))
                 .build();
         return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @DeleteMapping("/delete/{paymentId}")
+    public ResponseEntity<Object> deletePayment(@PathVariable Long paymentId) {
+        paymentService.deleteById(paymentId);
+
+        // Trả về thông báo xóa thành công
+        return new ResponseEntity<>("Xóa khoản thanh toán thành công", HttpStatus.OK);
     }
 }

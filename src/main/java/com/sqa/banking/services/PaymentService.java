@@ -27,6 +27,11 @@ public class PaymentService {
         return repository.getAllLoanPayment(loanId);
     }
 
+    public void deleteById(Long id){
+        repository.deleteById(id);
+    }
+
+    
     public void create(Loan loan) {
         double remainRoot = (double)loan.getAmount();
         double monthlyRoot = (double)((double)loan.getAmount()/(double)loan.getLoanTerm());

@@ -37,7 +37,24 @@ public class LoanController {
                 .build();
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+    @GetMapping("/details/{loanId}")
+    public ResponseEntity<Object> getLoanDetails(@PathVariable String loanId) {
+    // Lấy thông tin chi tiết của khoản vay với mã loanId
+        Loan loan = loanService.getDetail(loanId);
 
+    if (loan == null) {
+        // Nếu không tìm thấy khoản vay, trả về mã lỗi NOT_FOUND
+        return new ResponseEntity<>("Không tìm thấy thông tin khoản vay", HttpStatus.NOT_FOUND);
+    }
+
+    // Nếu tìm thấy, trả về thông tin chi tiết của khoản vay
+    SuccessResponse response = SuccessResponse.builder()
+            .status(HttpStatus.OK.value())
+            .message("Lấy thông tin khoản vay thành công")
+            .data(loan)
+            .build();
+    return new ResponseEntity<>(response, HttpStatus.OK);
+}
     @PostMapping("/create")
     public ResponseEntity<Object> createLoan(@RequestBody @Valid LoanRequest request) {
         Date currentDate = new Date();
