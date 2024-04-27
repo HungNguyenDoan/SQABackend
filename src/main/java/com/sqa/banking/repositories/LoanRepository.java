@@ -9,6 +9,6 @@ import org.springframework.data.repository.query.Param;
 import com.sqa.banking.models.Loan;
 
 public interface LoanRepository extends JpaRepository<Loan, String> {
-    @Query("select l from Loan l where l.status = 2 and l.customerId = :customerId")
+    @Query("select l from Loan l where l.customerId = :customerId")
     List<Loan> getAllActiveLoan(@Param("customerId") Long id);
 }
