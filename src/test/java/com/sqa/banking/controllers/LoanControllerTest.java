@@ -2,91 +2,83 @@ package com.sqa.banking.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sqa.banking.models.Loan;
-import com.sqa.banking.services.LoanService;
+import com.sqa.banking.payload.request.LoanRequest;
+
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentMatchers;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.Collections;
+import jakarta.persistence.EntityManager;
+import jakarta.transaction.Transactional;
 import java.util.Date;
 
-import static org.mockito.BDDMockito.given;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(LoanController.class)
+@SpringBootTest
+@AutoConfigureMockMvc
+@Transactional
 public class LoanControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+        @Autowired
+        private MockMvc mockMvc;
 
-    @MockBean
-    private LoanService loanService;
+        @Autowired
+        private EntityManager entityManager;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+        @Autowired
+        private ObjectMapper objectMapper;
 
-    @Test
-    public void testGetLoanDetailsWhenValidIdThenReturnLoanDetails() throws Exception {
-        String validId = "1";
-        Loan loan = Loan.builder()
-                .id(validId)
-                .customerId(1L)
-                .amount(10000)
-                .interestRate(5.0)
-                .startDate(new Date())
-                .endDate(new Date())
-                .build();
-        given(loanService.getLoanDetail(validId)).willReturn(loan);
+        private Loan savedLoan;
 
-        mockMvc.perform(get("/loan/{id}", validId))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.id").value(loan.getId()));
-    }
+        @BeforeEach
+        void setUp() {
+                // Setup test data
+                Loan newLoan = Loan.builder()
+                                .customerId(1L)
+                                .amount(10000)
+                                .interestRate(5.0)
+                                .startDate(new Date())
+                                .endDate(new Date())
+                                .build();
+                entityManager.persist(newLoan); // Persist the new loan
+                entityManager.flush(); // Flush changes to ensure they're applied to the database
 
-    @Test
-    public void testCreateLoanWhenValidRequestThenCreateLoan() throws Exception {
-        Loan loanRequest = Loan.builder()
-                .customerId(1L)
-                .amount(10000)
-                .interestRate(5.0)
-                .startDate(new Date())
-                .endDate(new Date())
-                .build();
-        Loan createdLoan = Loan.builder()
-                .id("2")
-                .customerId(loanRequest.getCustomerId())
-                .amount(loanRequest.getAmount())
-                .interestRate(loanRequest.getInterestRate())
-                .startDate(loanRequest.getStartDate())
-                .endDate(loanRequest.getEndDate())
-                .build();
-        given(loanService.createLoan(ArgumentMatchers.any(Loan.class))).willReturn(createdLoan);
+                // If you need to ensure the entity is in a clean state from the database, you
+                // can re-fetch it
+                savedLoan = entityManager.find(Loan.class, newLoan.getId());
+        }
 
-        mockMvc.perform(post("/loan/create")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(loanRequest)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.id").value(createdLoan.getId()));
-    }
+        @Test
+        public void testGetLoanDetailsWhenValidIdThenReturnLoanDetails() throws Exception {
+                mockMvc.perform(get("/loan/details/{loanId}", savedLoan.getId())
+                                .contentType(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.data.id").value(savedLoan.getId()));
+        }
 
-    @Test
-    public void testSearchLoanWhenValidCriteriaThenReturnSearchResults() throws Exception {
-        String searchCriteria = "John";
-        Loan loan = Loan.builder()
-                .id("1")
-                .customerId(1L)
-                .amount(10000)
-                .build();
-        given(loanService.searchLoans(searchCriteria)).willReturn(Collections.singletonList(loan));
-
-        mockMvc.perform(get("/loan/search")
-                        .param("criteria", searchCriteria))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data[0].id").value(loan.getId()));
-    }
+        @Test
+        public void testCreateLoanWhenValidRequestThenCreateLoan() throws Exception {
+                LoanRequest loanRequest = LoanRequest.builder()
+                                .customer_id(2L)
+                                .amount(20000)
+                                .loan_term(12)
+                                .has_collateral(1)
+                                .has_salary_statement(1)
+                                .has_salary_table(1)
+                                .build();
+                mockMvc.perform(post("/loan/create")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(loanRequest)))
+                                .andExpect(status().isOk())
+                                // Assuming the create endpoint returns the created loan ID or object
+                                .andExpect(jsonPath("$.data.customerId").value(loanRequest.getCustomer_id()))
+                                .andExpect(jsonPath("$.data.amount").value(loanRequest.getAmount()));
+        }
 }

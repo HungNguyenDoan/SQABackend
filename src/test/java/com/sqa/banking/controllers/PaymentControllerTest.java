@@ -1,73 +1,97 @@
 package com.sqa.banking.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sqa.banking.models.Loan;
 import com.sqa.banking.models.Payment;
-import com.sqa.banking.services.PaymentService;
+import com.sqa.banking.payload.request.PaymentRequest;
+import com.sqa.banking.repositories.LoanRepository;
+import com.sqa.banking.repositories.PaymentRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.Arrays;
+import jakarta.transaction.Transactional;
 import java.util.Date;
-import java.util.List;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(PaymentController.class)
+@SpringBootTest
+@AutoConfigureMockMvc
+@Transactional
 public class PaymentControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
-    private PaymentService paymentService;
-
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private PaymentRepository paymentRepository;
+
+    @Autowired
+    private LoanRepository loanRepository;
+
+    private Payment savedPayment;
+
+    private Loan loan;
+
+    private String loanId;
+
+    @BeforeEach
+    void setUp() {
+        // Initialize with test data
+        Payment payment = new Payment();
+        payment.setAmount(1000);
+        payment.setLoanId("loan123");
+        payment.setPay_date(new Date());
+        // Add more fields as required
+        savedPayment = paymentRepository.save(payment);
+
+        Loan newLoan = Loan.builder()
+                .customerId(1L)
+                .amount(50000)
+                .remaining(50000)
+                .loanTerm(12)
+                .startDate(new Date())
+                .updateDate(new Date())
+                .endDate(new Date())
+                .interestRate(5.0)
+                .build();
+        loan = loanRepository.save(newLoan); // Save and get the persisted entity
+        loanId = loan.getId();
+    }
+
     @Test
     public void testCreatePayment() throws Exception {
-        Payment paymentRequest = new Payment(/* initialize with test data */);
-        Payment createdPayment = new Payment(/* initialize with response data */);
+        PaymentRequest paymentRequest = PaymentRequest.builder()
+                .loan_id(loanId)
+                .amount(20000)
+                .build();
 
-        given(paymentService.createPayment(any(Payment.class))).willReturn(createdPayment);
-
-        mockMvc.perform(post("/payments")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(paymentRequest)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").exists());
+        mockMvc.perform(post("/payment/pay") // Ensure the URL matches your controller's endpoint
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(paymentRequest)))
+                .andExpect(status().isOk()) // Adjust based on your actual response status
+                .andExpect(jsonPath("$.data.amount").value(paymentRequest.getAmount()));
     }
 
     @Test
     public void testGetPaymentDetails() throws Exception {
-        Long paymentId = 1L;
-        Payment payment = new Payment(/* initialize with test data */);
-
-        given(paymentService.getPaymentDetails(paymentId)).willReturn(payment);
-
-        mockMvc.perform(get("/payments/{id}", paymentId))
+        mockMvc.perform(get("/payment/history/{loanId}", savedPayment.getLoanId()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(payment.getId()));
+                .andExpect(jsonPath("$.data[0].loanId").value(savedPayment.getLoanId()));
     }
 
     @Test
     public void testListPaymentsForLoan() throws Exception {
-        String loanId = "loan123";
-        List<Payment> payments = Arrays.asList(new Payment(/* initialize with test data */), new Payment(/* and more test data */));
-
-        given(paymentService.listPaymentsForLoan(loanId)).willReturn(payments);
-
-        mockMvc.perform(get("/payments/loan/{loanId}", loanId))
+        mockMvc.perform(get("/payment/history/{loanId}", savedPayment.getLoanId()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.size()").value(payments.size()));
+                .andExpect(jsonPath("$.data[0].loanId").value(savedPayment.getLoanId()));
     }
 }

@@ -2,6 +2,9 @@ package com.sqa.banking.services;
 
 import com.sqa.banking.models.Customer;
 import com.sqa.banking.repositories.CustomerRepository;
+
+import jakarta.transaction.Transactional;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
+@Transactional
 public class CustomerServiceTest {
 
     @Mock
